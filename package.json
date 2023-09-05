@@ -1,0 +1,15 @@
+{
+  "name": "bashboard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \" cd server && pnpm dev \" \" cd client && pnpm dev \""
+  },
+  "keywords": [],
+  "author": "Vyshak",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.1"
+  }
+}

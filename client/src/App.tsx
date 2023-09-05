@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import Home from "./pages/home";
 import { Themes } from "./lib/enums";
-import { useTheme } from "./stores/theme-store";
+import { useThemeStore } from "./stores/theme-store";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Board from "./pages/board";
+import { Toaster } from "./components/ui/toaster";
 
 const router = createBrowserRouter([
   {
@@ -11,13 +12,13 @@ const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: "/:boardId",
+    path: "/:roomId",
     element: <Board />,
   },
 ]);
 
 function App() {
-  const { theme } = useTheme();
+  const theme = useThemeStore(state => state.theme)
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove(Themes.Light, Themes.Dark);
@@ -34,6 +35,7 @@ function App() {
   return (
     <div className="relative h-screen w-full overflow-y-auto overflow-x-hidden bg-white dark:bg-slate-950">
       <RouterProvider router={router} />
+      <Toaster />
     </div>
   );
 }

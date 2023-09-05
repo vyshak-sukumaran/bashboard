@@ -7,7 +7,7 @@ interface ThemeState {
   setTheme: (theme: Themes) => void;
 }
 
-const useThemeStore = create<ThemeState>()(
+export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       theme: Themes.Light,
@@ -16,9 +16,3 @@ const useThemeStore = create<ThemeState>()(
     { name: "theme-storage", storage: createJSONStorage(() => localStorage) }
   )
 );
-
-export const useTheme = () => {
-    const theme = useThemeStore((state) => state.theme);
-    const setTheme = useThemeStore((state) => state.setTheme);
-    return { theme, setTheme };
-}

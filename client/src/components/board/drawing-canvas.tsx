@@ -1,19 +1,44 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Undo } from "lucide-react";
 import { useParams } from "react-router-dom";
+import useDraw, { type IDrawProps } from "@/hooks/useDraw";
+import { useCanvasStore } from "@/stores/canvas-store";
+import { draw } from "@/lib/utils";
 
 const DrawingCanvas: React.FC = () => {
-  let { boardId } = useParams();
-  console.log(boardId);
-  const [isCanvasLoading, setIsCanvasLoading] = useState<boolean>(false);
+  let { roomId } = useParams();
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isCanvasLoading, setIsCanvasLoading] = useState<boolean>(false);
+
+  const strokeColor = useCanvasStore(state => state.strokeColor);
+  const strokeWidth = useCanvasStore(state => state.strokeWidth);
+  const dashGap = useCanvasStore(state => state.dashGap);
+
+  const onDraw = useCallback(({ ctx, currentPoint, prevPoint} : IDrawProps) => {
+    const drawOptions = {
+      ctx,
+      currentPoint,
+      dashGap,
+      prevPoint,
+      strokeColor,
+      strokeWidth
+    }
+    draw(drawOptions)
+  }, [strokeColor, strokeWidth, dashGap, roomId])
+
+  const { canvasRef, onInteractionStart, clear, undo} = useDraw(onDraw)
   const handleInteractStart = () => {
-    console.log("heey");
+    const canvasElement = canvasRef.current
+    if (!canvasElement) return;
+
+    // socket code
+
+    onInteractionStart();
   };
 
   useEffect(() => {
+    // setting canvas dimentions on load
     if (!containerRef.current || !canvasRef.current) return;
     const { width, height } = containerRef.current?.getBoundingClientRect();
     canvasRef.current.width = width;
@@ -29,7 +54,7 @@ const DrawingCanvas: React.FC = () => {
           <Button variant="outline" size="icon">
             <Undo className="w-5 h-5" />
           </Button>
-          <Button variant="outline" size="default">
+          <Button variant="outline" size="default" onClick={clear}>
             Clear
           </Button>
         </div>

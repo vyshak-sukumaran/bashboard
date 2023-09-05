@@ -8,11 +8,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/stores/theme-store";
+import { useThemeStore } from "@/stores/theme-store";
 import { Themes } from "@/lib/enums";
 
 const SwitchTheme: React.FC = () => {
-  const { setTheme } = useTheme();
+  const setTheme = useThemeStore(state => state.setTheme)
 
   return (
     <DropdownMenu>
