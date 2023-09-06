@@ -18,19 +18,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { nanoid } from "nanoid";
-import CopyButton from "../copy-button";
-import { useNavigate } from "react-router-dom";
-import { useUserStore } from "@/stores/user-store";
-import { useMembersStore } from "@/stores/members-store";
 import { z } from "zod";
-import { createRoomSchema } from "@/lib/validations/create-room";
+import { createRoomSchema } from "@/lib/validations/room";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { canvasSocket as socket } from "@/lib/socket";
-import { type IRoomJoinedData } from "@/types";
-import { useToast } from "../ui/use-toast";
 import { Loader2 } from "lucide-react";
 
 type CreateFormProps = {
@@ -40,13 +33,7 @@ type CreateFormProps = {
 type CreateRoomForm = z.infer<typeof createRoomSchema>;
 const CreateForm: React.FC<CreateFormProps> = ({ handleJoinForm }) => {
   const roomId = nanoid();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const setUser = useUserStore((state) => state.setUser);
-  const setMembers = useMembersStore((state) => state.setMembers);
 
   const form = useForm<CreateRoomForm>({
     resolver: zodResolver(createRoomSchema),
@@ -60,28 +47,13 @@ const CreateForm: React.FC<CreateFormProps> = ({ handleJoinForm }) => {
     setIsLoading(true);
     socket.emit("create-room", { roomId, username });
   };
-
   useEffect(() => {
-    const handleRoomJoined = ({ user, members, roomId }: IRoomJoinedData) => {
-      setUser(user);
-      setMembers(members);
-      navigate(`/${roomId}`);
+    const handleRoomNotFound = () => {
+      setIsLoading(false);
     };
-    const handleErrorMessage = ({ message }: { message: string }) => {
-      toast({
-        title: "Failed to join room",
-        description: message,
-      });
-    }
-
-    socket.on("room-joined", handleRoomJoined);
-    socket.on("room-not-found", handleErrorMessage);
-    socket.on("invalid-data", handleErrorMessage);
-
+    socket.on("room-not-found", handleRoomNotFound);
     return () => {
-      socket.off("room-joined", handleRoomJoined);
-      socket.off("room-not-found", handleErrorMessage);
-      socket.off("invalid-data", handleErrorMessage);
+      socket.off("room-not-found", handleRoomNotFound);
     };
   }, []);
 
@@ -115,22 +87,24 @@ const CreateForm: React.FC<CreateFormProps> = ({ handleJoinForm }) => {
                 </FormItem>
               )}
             />
-            <div className="flex flex-col space-y-1.5">
-              <Label>Room ID</Label>
-              <div className="w-full flex items-center justify-between border rounded-md h-10 p-0.5 pl-2.5">
-                <span className="block flex-grow text-sm">{roomId}</span>
-                <CopyButton value={roomId} />
-              </div>
-            </div>
             <Button type="submit" className="w-full">
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Room"}
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Create Room"
+              )}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter className="flex flex-col gap-2">
         <CardDescription>OR</CardDescription>
-        <Button variant="outline" className="w-full" onClick={handleJoinForm} disabled={isLoading}>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleJoinForm}
+          disabled={isLoading}
+        >
           Join Room
         </Button>
       </CardFooter>

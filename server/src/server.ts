@@ -14,7 +14,7 @@ const io = new Server(server);
 
 app.use(cors());
 
-io.of("/canvas", canvasStream);
+io.of("/canvas").on("connection", canvasStream);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);

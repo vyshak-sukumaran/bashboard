@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,18 +8,53 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { canvasSocket as socket } from "@/lib/socket";
+import { joinRoomSchema } from "@/lib/validations/room";
+import { z } from "zod";
+import { Loader2 } from "lucide-react";
 
 type JoinFormProps = {
   handleCreateForm: () => void;
 };
 
+type JoinRoomForm = z.infer<typeof joinRoomSchema>;
+
 const JoinForm: React.FC<JoinFormProps> = ({ handleCreateForm }) => {
-  const handleJoinRoom = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert("Joining room");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const form = useForm<JoinRoomForm>({
+    resolver: zodResolver(joinRoomSchema),
+    defaultValues: {
+      username: "",
+      roomId: "",
+    },
+  });
+  const onSubmit = ({ username, roomId }: JoinRoomForm) => {
+    setIsLoading(true);
+    socket.emit("join-room", { username, roomId });
   };
+
+  useEffect(() => {
+    const handleRoomNotFound = () => {
+      setIsLoading(false);
+    };
+    socket.on("room-not-found", handleRoomNotFound);
+    return () => {
+      socket.off("room-not-found", handleRoomNotFound);
+    }
+  }, []);
   return (
     <Card className="w-[400px] mt-10 mx-auto">
       <CardHeader>
@@ -28,28 +63,56 @@ const JoinForm: React.FC<JoinFormProps> = ({ handleCreateForm }) => {
           Collab with your friends.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form id="joinRoomForm" onSubmit={handleJoinRoom}>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Enter your name</Label>
-              <Input id="name" placeholder="e.g. Alex Paul" />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="roomId">Enter room ID</Label>
-              <Input
-                id="roomId"
-                placeholder="e.g. 7fcd8a8b-8f7d-4f3e-a3a1-1b77b07e3f7d"
-              />
-            </div>
-          </div>
-        </form>
+      <CardContent className="pb-2">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 grid w-full items-center"
+          >
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Enter your name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Alex Paul" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This is your public display name
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="roomId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Enter room ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. 7fcd8a8b-8f7d-4f3e-a3a1-1b77b07e3f7d"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full">
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Join Room"
+              )}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter className="flex flex-col gap-2">
-        <Button className="w-full" form="joinRoomForm">
-          Join Room
-        </Button>
-        <CardDescription>or</CardDescription>
+        <CardDescription>OR</CardDescription>
         <Button variant="outline" className="w-full" onClick={handleCreateForm}>
           Create Room
         </Button>

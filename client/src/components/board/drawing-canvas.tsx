@@ -5,11 +5,12 @@ import { useParams } from "react-router-dom";
 import useDraw, { type IDrawProps } from "@/hooks/useDraw";
 import { useCanvasStore } from "@/stores/canvas-store";
 import { draw } from "@/lib/utils";
+import { canvasSocket as socket } from "@/lib/socket";
 
 const DrawingCanvas: React.FC = () => {
   let { roomId } = useParams();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isCanvasLoading, setIsCanvasLoading] = useState<boolean>(false);
+  const [isCanvasLoading, setIsCanvasLoading] = useState<boolean>(true);
 
   const strokeColor = useCanvasStore(state => state.strokeColor);
   const strokeWidth = useCanvasStore(state => state.strokeWidth);
@@ -32,8 +33,10 @@ const DrawingCanvas: React.FC = () => {
     const canvasElement = canvasRef.current
     if (!canvasElement) return;
 
-    // socket code
-
+    socket.emit("add-undo-point", {
+      roomId,
+      undoPoint: canvasElement.toDataURL()
+    })
     onInteractionStart();
   };
 
@@ -44,6 +47,19 @@ const DrawingCanvas: React.FC = () => {
     canvasRef.current.width = width;
     canvasRef.current.height = height;
   }, [canvasRef]);
+
+  useEffect(() => {
+    const canvasElement = canvasRef.current
+    if (!canvasElement) return;
+
+    const ctx = canvasElement.getContext("2d")
+
+    socket.emit("client-ready", roomId)
+    socket.on("client-loaded", () => {
+      setIsCanvasLoading(false)
+    })
+
+  }, [canvasRef, roomId])
   return (
     <main
       ref={containerRef}
@@ -61,7 +77,7 @@ const DrawingCanvas: React.FC = () => {
       )}
 
       {isCanvasLoading && (
-        <div className="flex gap-2 items-end">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-2 items-end">
           <p className="text-lg font-medium tracking-wider font-poppins">
             Loading
           </p>

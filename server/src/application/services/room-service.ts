@@ -21,6 +21,7 @@ class RoomService implements IRoomService {
             id: this.socket.id,
             username
         }
+        
         this.userRepository.addUser({...user, roomId});
         const members = this.userRepository.getRoomMembers(roomId)
 
@@ -29,12 +30,18 @@ class RoomService implements IRoomService {
             roomId,
             members
         })
+        
         this.socket.to(roomId).emit("update-members", members)
         this.socket.to(roomId).emit("send-notification", {
             title: "New member arrived!",
             message: `${username} has joined the room`
         })
 
+    }
+
+    isRoomCreated(roomId: string): boolean {
+        const rooms = this.socket.rooms;
+        return rooms.has(roomId);
     }
 
 }

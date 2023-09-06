@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ReactComponent as BashIcon } from "@/assets/bash.svg";
 import SwitchTheme from "@/components/switch-theme";
 import { Button } from "@/components/ui/button";
 import { LogOut, Share2, Users2 } from "lucide-react";
+import { canvasSocket as socket } from "@/lib/socket";
 
 const Nav : React.FC = () => {
+  console.log("here");
+  
+  useEffect(() => {
+    socket.on("update-members", () => {
+      console.log("heelooo members");
+      
+    });
+  }, [])
   return (
     <nav className="flex items-center z-40 bg-zinc-50 justify-between p-2 pt-1 border-b shrink-0 h-fit sticky top-0 left-0">
         <BashIcon className="w-11 h-11" />
