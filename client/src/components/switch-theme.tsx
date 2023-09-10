@@ -1,6 +1,5 @@
 import React from "react";
 import { Laptop, Moon, Sun } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useThemeStore } from "@/stores/theme-store";
+import { useThemeStore } from "@/stores";
 import { Themes } from "@/lib/enums";
 
 const SwitchTheme: React.FC = () => {

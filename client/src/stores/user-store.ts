@@ -1,9 +1,9 @@
-import { type IUser } from "@/types";
+import { type IRoomMembers } from "@/types";
 import { create } from "zustand";
 
 interface UserState {
-    user: IUser | null,
-    setUser: (user: IUser) => void
+    user: IRoomMembers | null,
+    setUser: (user: IRoomMembers) => void
 }
 export const useUserStore = create<UserState>((set) => ({
     user: null,

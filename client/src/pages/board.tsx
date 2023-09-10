@@ -5,7 +5,7 @@ import DrawingCanvas from "@/components/board/drawing-canvas";
 const Board: React.FC = () => {
 
   return (
-    <div className="h-full bg-white flex flex-col">
+    <div className="h-full flex flex-col">
       <Nav />
       <div className="grow flex relative overflow-hidden">
         <Sidebar />

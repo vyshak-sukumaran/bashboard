@@ -23,7 +23,7 @@ import { z } from "zod";
 import { createRoomSchema } from "@/lib/validations/room";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { canvasSocket as socket } from "@/lib/socket";
+import { socket } from "@/lib/socket";
 import { Loader2 } from "lucide-react";
 
 type CreateFormProps = {
@@ -53,7 +53,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ handleJoinForm }) => {
     };
     socket.on("room-not-found", handleRoomNotFound);
     return () => {
-      socket.off("room-not-found", handleRoomNotFound);
+      socket.off("room-not-found");
     };
   }, []);
 

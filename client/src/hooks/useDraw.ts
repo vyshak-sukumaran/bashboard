@@ -1,15 +1,7 @@
 import { drawWithDataURL } from '@/lib/utils'
+import type { IPoint, IDrawProps } from '@/types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-interface IPoint {
-  x: number
-  y: number
-}
-export interface IDrawProps {
-  ctx: CanvasRenderingContext2D,
-  currentPoint: IPoint,
-  prevPoint: IPoint | undefined
-}
 
 type OnDraw = (draw: IDrawProps) => void
 
@@ -20,7 +12,7 @@ interface IUseDrawResult {
   undo: (undoPoint: string) => void
 }
 
-const useDraw = (onDraw: OnDraw) : IUseDrawResult => {
+export const useDraw = (onDraw: OnDraw) : IUseDrawResult => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const prevPointRef = useRef<IPoint>()
 
@@ -107,5 +99,3 @@ const useDraw = (onDraw: OnDraw) : IUseDrawResult => {
     undo
   }
 }
-
-export default useDraw

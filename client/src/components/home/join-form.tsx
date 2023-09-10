@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { canvasSocket as socket } from "@/lib/socket";
+import { socket } from "@/lib/socket";
 import { joinRoomSchema } from "@/lib/validations/room";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";

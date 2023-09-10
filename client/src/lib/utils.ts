@@ -40,3 +40,8 @@ export function draw(drawOptions: IDrawOptions) {
   // adding stroke to the line (rendering part)
   ctx.stroke();
 }
+
+export function isMacOs() {
+  if (typeof navigator === undefined) return
+  return navigator.userAgent.includes("Mac");
+}

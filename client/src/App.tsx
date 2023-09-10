@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Home from "./pages/home";
 import { Themes } from "./lib/enums";
-import { useThemeStore } from "./stores/theme-store";
+import { useThemeStore } from "./stores";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Board from "./pages/board";
 import { Toaster } from "./components/ui/toaster";

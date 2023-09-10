@@ -4,12 +4,11 @@ import JoinForm from "@/components/home/join-form";
 import { Forms } from "@/lib/enums";
 import CreateForm from "@/components/home/create-form";
 import SwitchTheme from "@/components/switch-theme";
-import { type IRoomJoinedData } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useUserStore } from "@/stores/user-store";
-import { useMembersStore } from "@/stores/members-store";
-import { canvasSocket as socket } from "@/lib/socket";
+import { useUserStore } from "@/stores";
+import { useMembersStore } from "@/stores";
+import { socket } from "@/lib/socket";
 import {
   Dialog,
   DialogContent,
@@ -41,12 +40,17 @@ const Home: React.FC = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     navigate(`/${roomKey}`);
-  }
+  };
 
   useEffect(() => {
-    console.log("loopin'");
-    
-    const handleRoomJoined = ({ user, members, roomId }: IRoomJoinedData) => {
+    const handleErrorMessage = ({ message }: { message: string }) => {
+      toast({
+        title: "Failed to join room",
+        description: message,
+      });
+    };
+
+    socket.on("room-joined", ({ members, user, roomId = "" }) => {
       setUser(user);
       setMembers(members);
       console.log(roomId, "roomId");
@@ -56,22 +60,15 @@ const Home: React.FC = () => {
       }
       setRoomKey(roomId);
       setOpenDialog(true);
-    };
-    const handleErrorMessage = ({ message }: { message: string }) => {
-      toast({
-        title: "Failed to join room",
-        description: message,
-      });
-    };
+    });
 
-    socket.on("room-joined", handleRoomJoined);
     socket.on("room-not-found", handleErrorMessage);
     socket.on("invalid-data", handleErrorMessage);
 
     return () => {
-      socket.off("room-joined", handleRoomJoined);
-      socket.off("room-not-found", handleErrorMessage);
-      socket.off("invalid-data", handleErrorMessage);
+      socket.off("room-joined");
+      socket.off("room-not-found");
+      socket.off("invalid-data");
     };
   }, [currentForm]);
   return (
@@ -102,7 +99,9 @@ const Home: React.FC = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleCloseDialog} type="submit">Continue</Button>
+              <Button onClick={handleCloseDialog} type="submit">
+                Continue
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -1,90 +1,118 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
-import { Undo } from "lucide-react";
 import { useParams } from "react-router-dom";
-import useDraw, { type IDrawProps } from "@/hooks/useDraw";
-import { useCanvasStore } from "@/stores/canvas-store";
-import { draw } from "@/lib/utils";
-import { canvasSocket as socket } from "@/lib/socket";
+import { useCanvasStore } from "@/stores";
+import { draw, drawWithDataURL } from "@/lib/utils";
+import { socket } from "@/lib/socket";
+import UndoButton from "./undo-button";
+import ClearButton from "./clear-button";
+import { useDraw } from "@/hooks";
+import type { IDrawProps } from "@/types";
+import { Skeleton } from "../ui/skeleton";
 
 const DrawingCanvas: React.FC = () => {
   let { roomId } = useParams();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCanvasLoading, setIsCanvasLoading] = useState<boolean>(true);
+  const [canUndo, setCanUndo] = useState<boolean>(true);
 
-  const strokeColor = useCanvasStore(state => state.strokeColor);
-  const strokeWidth = useCanvasStore(state => state.strokeWidth);
-  const dashGap = useCanvasStore(state => state.dashGap);
+  const strokeColor = useCanvasStore((state) => state.strokeColor);
+  const strokeWidth = useCanvasStore((state) => state.strokeWidth);
+  const dashGap = useCanvasStore((state) => state.dashGap);
 
-  const onDraw = useCallback(({ ctx, currentPoint, prevPoint} : IDrawProps) => {
-    const drawOptions = {
-      ctx,
-      currentPoint,
-      dashGap,
-      prevPoint,
-      strokeColor,
-      strokeWidth
-    }
-    draw(drawOptions)
-  }, [strokeColor, strokeWidth, dashGap, roomId])
+  const onDraw = useCallback(
+    ({ ctx, currentPoint, prevPoint }: IDrawProps) => {
+      const drawOptions = {
+        ctx,
+        currentPoint,
+        dashGap,
+        prevPoint,
+        strokeColor,
+        strokeWidth,
+      };
+      draw(drawOptions);
+      socket.emit("draw", { drawOptions, roomId });
+    },
+    [strokeColor, strokeWidth, dashGap, roomId]
+  );
 
-  const { canvasRef, onInteractionStart, clear, undo} = useDraw(onDraw)
+  const { canvasRef, onInteractionStart, clear, undo } = useDraw(onDraw);
   const handleInteractStart = () => {
-    const canvasElement = canvasRef.current
+    const canvasElement = canvasRef.current;
     if (!canvasElement) return;
 
     socket.emit("add-undo-point", {
       roomId,
-      undoPoint: canvasElement.toDataURL()
-    })
+      undoPoint: canvasElement.toDataURL(),
+    });
+    setCanUndo(true)
     onInteractionStart();
   };
 
   useEffect(() => {
-    // setting canvas dimentions on load
+    // setting canvas dimensions on load
     if (!containerRef.current || !canvasRef.current) return;
     const { width, height } = containerRef.current?.getBoundingClientRect();
-    canvasRef.current.width = width;
-    canvasRef.current.height = height;
+    canvasRef.current.width = width - 20;
+    canvasRef.current.height = height - 20;
   }, [canvasRef]);
 
   useEffect(() => {
-    const canvasElement = canvasRef.current
+    const canvasElement = canvasRef.current;
     if (!canvasElement) return;
 
-    const ctx = canvasElement.getContext("2d")
+    const ctx = canvasElement.getContext("2d");
 
-    socket.emit("client-ready", roomId)
+    socket.emit("client-ready", roomId);
     socket.on("client-loaded", () => {
-      setIsCanvasLoading(false)
-    })
+      setIsCanvasLoading(false);
+    });
 
-  }, [canvasRef, roomId])
+    socket.on("get-canvas-state", () => {
+      const canvasState = canvasElement.toDataURL();
+      if (!canvasState) return;
+
+      socket.emit("send-canvas-state", { canvasState, roomId });
+    });
+
+    socket.on("canvas-state-from-server", (canvasState: string) => {
+      if (!ctx) return;
+      drawWithDataURL(canvasState, ctx, canvasElement);
+      setIsCanvasLoading(false);
+    });
+
+    socket.on("update-canvas-state", (drawOptions) => {
+      if (!ctx) return;
+      draw({ ...drawOptions, ctx });
+    });
+
+    socket.on("undo-canvas", (canvasState) => {
+      if (!ctx) return;
+      drawWithDataURL(canvasState, ctx, canvasElement);
+    });
+    socket.on("disable-undo-button", () => {
+      setCanUndo(false)
+    })
+    return () => {
+      socket.off("client-loaded");
+      socket.off("get-canvas-state");
+      socket.off("canvas-state-from-server");
+      socket.off("disable-undo-button");
+    };
+  }, [canvasRef, roomId]);
   return (
     <main
       ref={containerRef}
       className="overflow-auto canvas-scrollbar grow w-full relative flex items-center justify-center"
     >
       {!isCanvasLoading && (
-        <div className="flex gap-2 items-center absolute top-2 right-2">
-          <Button variant="outline" size="icon">
-            <Undo className="w-5 h-5" />
-          </Button>
-          <Button variant="outline" size="default" onClick={clear}>
-            Clear
-          </Button>
+        <div className="flex gap-2 items-center absolute top-5 right-5">
+          <UndoButton undo={undo} canUndo={canUndo} />
+          <ClearButton canvasRef={canvasRef} clear={clear} />
         </div>
       )}
 
       {isCanvasLoading && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-2 items-end">
-          <p className="text-lg font-medium tracking-wider font-poppins">
-            Loading
-          </p>
-          <span className="block w-1 h-1 bg-black rounded-full mb-1.5 animate-pulse"></span>
-          <span className="block w-1 h-1 bg-black rounded-full mb-1.5 delay-150 animate-pulse"></span>
-          <span className="block w-1 h-1 bg-black rounded-full mb-1.5 delay-300 animate-pulse"></span>
-        </div>
+        <Skeleton className='absolute h-[calc(100%-20px)] w-[calc(100%-20px)]' />
       )}
 
       <canvas

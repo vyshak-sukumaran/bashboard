@@ -1,10 +1,10 @@
-import { type IUser } from "@/types";
+import { type IRoomMembers } from "@/types";
 import { create } from "zustand";
 
 
 interface IMembersState {
-    members: IUser[],
-    setMembers: (members: IUser[]) => void
+    members: IRoomMembers[],
+    setMembers: (members: IRoomMembers[]) => void
 }
 
 export const useMembersStore = create<IMembersState>((set) => ({
