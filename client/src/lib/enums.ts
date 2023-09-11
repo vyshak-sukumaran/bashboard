@@ -9,4 +9,11 @@ enum Themes {
     System = "system",
 }
 
-export { Forms, Themes };
+enum Tools {
+    Brush = "brush",
+    Eraser = "eraser",
+    Text = "text",
+    Widgets = "widgets",
+}
+
+export { Forms, Themes, Tools };

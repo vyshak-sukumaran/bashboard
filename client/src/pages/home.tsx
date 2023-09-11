@@ -53,7 +53,6 @@ const Home: React.FC = () => {
     socket.on("room-joined", ({ members, user, roomId = "" }) => {
       setUser(user);
       setMembers(members);
-      console.log(roomId, "roomId");
       if (currentForm === Forms.Join) {
         navigate(`/${roomId}`);
         return;
