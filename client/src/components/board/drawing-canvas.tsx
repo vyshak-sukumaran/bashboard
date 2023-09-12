@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useCanvasStore } from "@/stores";
+import { useNavigate, useParams } from "react-router-dom";
+import { useCanvasStore, useUserStore } from "@/stores";
 import { draw, drawWithDataURL } from "@/lib/utils";
 import { socket } from "@/lib/socket";
 import UndoButton from "./undo-button";
@@ -11,6 +11,7 @@ import { Skeleton } from "../ui/skeleton";
 
 const DrawingCanvas: React.FC = () => {
   let { roomId } = useParams();
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCanvasLoading, setIsCanvasLoading] = useState<boolean>(true);
   const [canUndo, setCanUndo] = useState<boolean>(true);
@@ -18,6 +19,7 @@ const DrawingCanvas: React.FC = () => {
   const strokeColor = useCanvasStore((state) => state.strokeColor);
   const strokeWidth = useCanvasStore((state) => state.strokeWidth);
   const dashGap = useCanvasStore((state) => state.dashGap);
+  const user = useUserStore((state) => state.user);
 
   const onDraw = useCallback(
     ({ ctx, currentPoint, prevPoint }: IDrawProps) => {
@@ -36,6 +38,7 @@ const DrawingCanvas: React.FC = () => {
   );
 
   const { canvasRef, onInteractionStart, clear, undo } = useDraw(onDraw);
+
   const handleInteractStart = () => {
     const canvasElement = canvasRef.current;
     if (!canvasElement) return;
@@ -44,7 +47,7 @@ const DrawingCanvas: React.FC = () => {
       roomId,
       undoPoint: canvasElement.toDataURL(),
     });
-    setCanUndo(true)
+    setCanUndo(true);
     onInteractionStart();
   };
 
@@ -90,8 +93,8 @@ const DrawingCanvas: React.FC = () => {
       drawWithDataURL(canvasState, ctx, canvasElement);
     });
     socket.on("disable-undo-button", () => {
-      setCanUndo(false)
-    })
+      setCanUndo(false);
+    });
     return () => {
       socket.off("client-loaded");
       socket.off("get-canvas-state");
@@ -99,6 +102,14 @@ const DrawingCanvas: React.FC = () => {
       socket.off("disable-undo-button");
     };
   }, [canvasRef, roomId]);
+
+  useEffect(() => {
+    if (!user) {
+      return navigate("/", {
+        replace: true,
+      });
+    }
+  }, [user]);
   return (
     <main
       ref={containerRef}
@@ -112,7 +123,7 @@ const DrawingCanvas: React.FC = () => {
       )}
 
       {isCanvasLoading && (
-        <Skeleton className='absolute h-[calc(100%-20px)] w-[calc(100%-20px)]' />
+        <Skeleton className="absolute h-[calc(100%-20px)] w-[calc(100%-20px)]" />
       )}
 
       <canvas
