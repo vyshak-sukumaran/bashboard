@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { useCanvasStore, useUserStore } from "@/stores";
 import { draw, drawWithDataURL } from "@/lib/utils";
 import { socket } from "@/lib/socket";
@@ -11,7 +11,6 @@ import { Skeleton } from "../ui/skeleton";
 
 const DrawingCanvas: React.FC = () => {
   let { roomId } = useParams();
-  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCanvasLoading, setIsCanvasLoading] = useState<boolean>(true);
   const [canUndo, setCanUndo] = useState<boolean>(true);
@@ -103,14 +102,9 @@ const DrawingCanvas: React.FC = () => {
     };
   }, [canvasRef, roomId]);
 
-  useEffect(() => {
-    if (!user) {
-      return navigate("/", {
-        replace: true,
-      });
-    }
-  }, [user]);
   return (
+    <>
+    {!user && <Navigate to="/" replace />}
     <main
       ref={containerRef}
       className="overflow-auto canvas-scrollbar grow w-full relative flex items-center justify-center"
@@ -136,6 +130,7 @@ const DrawingCanvas: React.FC = () => {
         className="touch-none rounded border bg-white"
       />
     </main>
+    </>
   );
 };
 
