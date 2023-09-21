@@ -102,9 +102,9 @@ const DrawingCanvas: React.FC = () => {
     };
   }, [canvasRef, roomId]);
 
-  return (
-    <>
-    {!user && <Navigate to="/" replace />}
+  return !user ? (
+    <Navigate to="/" />
+  ) : (
     <main
       ref={containerRef}
       className="overflow-auto canvas-scrollbar grow w-full relative flex items-center justify-center"
@@ -130,7 +130,6 @@ const DrawingCanvas: React.FC = () => {
         className="touch-none rounded border bg-white"
       />
     </main>
-    </>
   );
 };
 

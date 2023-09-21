@@ -51,7 +51,6 @@ const Sidebar: React.FC = () => {
             </li>
           )
         })}
-        
       </ul>
     </aside>
   );
