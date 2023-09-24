@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
 import TooltipWrapper from "../tooltip-wrapper";
-import { Button } from "../ui/button";
 import { useParams } from "react-router-dom";
 import { socket } from "@/lib/socket";
 import { useHotkeys } from "react-hotkeys-hook";
-import { X } from "lucide-react";
 import { isMacOs } from "@/lib/utils";
 
 interface IClearButtonProps {
@@ -36,9 +34,9 @@ const ClearButton: React.FC<IClearButtonProps> = ({ clear, canvasRef }) => {
   }, [clear]);
   return (
     <TooltipWrapper content="Clear" align="center" side="bottom">
-      <Button variant="outline" size="icon" onClick={handleClearCanvas}>
-        <X className="w-4 h-4" />
-      </Button>
+      <button onClick={handleClearCanvas} className="text-sm">
+        Clear
+      </button>
     </TooltipWrapper>
   );
 };

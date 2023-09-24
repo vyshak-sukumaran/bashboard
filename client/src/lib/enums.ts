@@ -10,10 +10,10 @@ enum Themes {
 }
 
 enum Tools {
-    Brush = "brush",
-    Eraser = "eraser",
-    Text = "text",
-    Widgets = "widgets",
+    Brush = "Brush",
+    Eraser = "Eraser",
+    Text = "Text",
+    Widgets = "Widgets",
 }
 
 export { Forms, Themes, Tools };

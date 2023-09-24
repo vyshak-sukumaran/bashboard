@@ -9,7 +9,7 @@ import LeaveButton from "./leave-button";
 const Nav : React.FC = () => {
 
   return (
-    <nav className="flex items-center z-40 bg-zinc-50 dark:bg-slate-900 justify-between p-2 pt-1 border-b shrink-0 h-fit sticky top-0 left-0">
+    <nav className="flex items-center z-40 bg-white dark:bg-slate-900 justify-between p-2 pt-1 border-b shrink-0 h-fit sticky top-0 left-0">
         <BashIcon className="w-11 h-11 fill-black dark:fill-white" />
         <ul className="flex list-none gap-2">
           <li>

@@ -19,9 +19,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import CopyButton from "@/components/copy-button";
+import { useURLState } from "@/hooks";
 
+type FormType = {
+  form: Forms;
+};
 const Home: React.FC = () => {
-  const [currentForm, setCurrentForm] = useState<Forms>(Forms.Join);
+  const [currentForm, setCurrentForm] = useURLState<FormType>({
+    form: Forms.Join,
+  });
   const [roomKey, setRoomKey] = useState<string>("");
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -31,10 +37,10 @@ const Home: React.FC = () => {
   const setMembers = useMembersStore((state) => state.setMembers);
 
   const handleCreateForm = () => {
-    setCurrentForm(Forms.Create);
+    setCurrentForm({ form : Forms.Create });
   };
   const handleJoinForm = () => {
-    setCurrentForm(Forms.Join);
+    setCurrentForm({ form : Forms.Join });
   };
 
   const handleCloseDialog = () => {
@@ -53,7 +59,7 @@ const Home: React.FC = () => {
     socket.on("room-joined", ({ members, user, roomId = "" }) => {
       setUser(user);
       setMembers(members);
-      if (currentForm === Forms.Join) {
+      if (currentForm.form === Forms.Join) {
         navigate(`/${roomId}`);
         return;
       }
@@ -77,9 +83,9 @@ const Home: React.FC = () => {
         <SwitchTheme />
       </nav>
       <main>
-        {currentForm === Forms.Join ? (
+        {currentForm.form === Forms.Join ? (
           <JoinForm handleCreateForm={handleCreateForm} />
-        ) : currentForm === Forms.Create ? (
+        ) : currentForm.form === Forms.Create ? (
           <CreateForm handleJoinForm={handleJoinForm} />
         ) : null}
 

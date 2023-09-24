@@ -3,11 +3,11 @@ import { useParams, Navigate } from "react-router-dom";
 import { useCanvasStore, useUserStore } from "@/stores";
 import { draw, drawWithDataURL } from "@/lib/utils";
 import { socket } from "@/lib/socket";
-import UndoButton from "./undo-button";
-import ClearButton from "./clear-button";
 import { useDraw } from "@/hooks";
 import type { IDrawProps } from "@/types";
 import { Skeleton } from "../ui/skeleton";
+import Sidebar from "./sidebar";
+import CanvasNav from "./canvas-nav";
 
 const DrawingCanvas: React.FC = () => {
   let { roomId } = useParams();
@@ -105,31 +105,31 @@ const DrawingCanvas: React.FC = () => {
   return !user ? (
     <Navigate to="/" />
   ) : (
-    <main
-      ref={containerRef}
-      className="overflow-auto canvas-scrollbar grow w-full relative flex items-center justify-center"
-    >
-      {!isCanvasLoading && (
-        <div className="flex gap-2 items-center absolute top-5 right-5">
-          <UndoButton undo={undo} canUndo={canUndo} />
-          <ClearButton canvasRef={canvasRef} clear={clear} />
-        </div>
-      )}
+    <>
+    <CanvasNav undo={undo} canUndo={canUndo} canvasRef={canvasRef} clear={clear} />
+    <div className="grow flex relative overflow-hidden">
+      <Sidebar />
+      <main
+        ref={containerRef}
+        className="overflow-auto canvas-scrollbar grow w-full relative flex items-center justify-center"
+      >
 
-      {isCanvasLoading && (
-        <Skeleton className="absolute h-[calc(100%-20px)] w-[calc(100%-20px)]" />
-      )}
+        {isCanvasLoading && (
+          <Skeleton className="absolute h-[calc(100%-20px)] w-[calc(100%-20px)]" />
+        )}
 
-      <canvas
-        id="canvas"
-        ref={canvasRef}
-        onMouseDown={handleInteractStart}
-        onTouchStart={handleInteractStart}
-        width={0}
-        height={0}
-        className="touch-none rounded border bg-white"
-      />
-    </main>
+        <canvas
+          id="canvas"
+          ref={canvasRef}
+          onMouseDown={handleInteractStart}
+          onTouchStart={handleInteractStart}
+          width={0}
+          height={0}
+          className="touch-none rounded border bg-white"
+        />
+      </main>
+    </div>
+    </>
   );
 };
 

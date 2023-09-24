@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "../ui/button";
 import { Loader2, Undo } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { socket } from "@/lib/socket";
@@ -45,13 +44,13 @@ const UndoButton: React.FC<IUndoButtonProps> = ({ undo, canUndo }) => {
 
   return (
     <TooltipWrapper content="Undo" align="center" side="bottom">
-      <Button variant="outline" size="icon" onClick={handleUndoButtonClick} disabled={!canUndo}>
+      <button className="w-fit h-fit p-1 group" onClick={handleUndoButtonClick} disabled={!canUndo}>
         {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin group-disabled:text-gray-300" />
         ) : (
-          <Undo className="h-4 w-4" />
+          <Undo className="h-5 w-5 group-disabled:text-gray-300" />
         )}
-      </Button>
+      </button>
     </TooltipWrapper>
   );
 };
